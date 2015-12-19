@@ -1,0 +1,132 @@
+# -*- coding: utf-8 -*-
+
+"""
+ Kim Langenkrans
+ V. 2.7.10
+ Macintosh
+
+"""
+import Tkinter
+from Tkinter import *
+import tkMessageBox
+
+#Skapar fönstret
+root = Tkinter.Tk()
+#Importerar bild, lägger i label,platserar ut laben.
+palapp_icon = PhotoImage(file="palapp.gif", )
+palapp_icon_label =Tkinter.Label(root, image=palapp_icon)
+palapp_icon_label.grid(row=4, column=0, columnspan=3)
+
+#Skapar en label, ger den en storlek
+palindrom_label = Tkinter.Label(root, text="[PalApp] - mata in något, se om det är en palindrom", height=10, width=70, pady=15)
+
+#Skapar en entry, platserar den i root, anger storlek och färgsätter den.
+mata_in_palindrom = Tkinter.Entry(root, width=15, bg="#B2DFDB", fg="#004D40")
+
+#Skapar en dic för att samla godkända palindromer
+palindromer = []
+
+#main-metod som bygger programmet och försätter den i en loop som avslutas när programmet avbryts
+def main():
+    bygg_program()
+    Tkinter.mainloop() #När mainloopen returneras avslutas programmet
+
+#Ger fönstrer titel, storlek och färg samt skapar knappar
+def bygg_program():
+    root.title("PalApp")
+    root.geometry("640x470+550+250")
+    root.config(bg="#26A69A")
+    root.resizable(0,0) #Låser fönstret
+
+    palindrom_label.grid(row=0, rowspan=1, column=0, columnspan=3, padx=2, pady=2)
+    palindrom_label.config(bg="#B2DFDB", fg="#004D40", font=("Garamond", 20, "bold"))
+    mata_in_palindrom.grid(row=1, rowspan=2, column=1, columnspan=1)
+
+    spara_palindrom = Tkinter.Button(root, text="Spara", width=8, command=spara_palindrom_pa_fil, font=("Garamond", 14, "bold"))
+    spara_palindrom.grid(row=3, column=0, pady=10)
+
+    testa_palindrom = Tkinter.Button(root, text="Testa", width=8, command=testaPalindrom,font=("Garamond", 14, "bold"))
+    testa_palindrom.grid(row=3, column=1, pady=10)
+
+    avsluta_palindromdetektorn = Tkinter.Button(root, text="Avsluta", width=8, font=("Garamond", 14, "bold"))
+    avsluta_palindromdetektorn.config(command=avsluta_program)
+    avsluta_palindromdetektorn.grid(row=3, column=2, pady=10)
+    skapa_meny()
+
+#Skapar menyn + undermenyer, där ligger beskrivningen gömd om hur programmet fungerar och
+# vad en palidrom egentligen är.
+def skapa_meny():
+    menubar = Menu(root)
+    root.config(menu=menubar)
+
+    under_meny_arkiv = Menu(menubar)
+    menubar.add_cascade(label="Arkiv", menu=under_meny_arkiv)
+    under_meny_arkiv.add_command(label="Start", command=tillbaka_till_start, accelerator="Command-n")
+    under_meny_arkiv.add_separator()
+    under_meny_arkiv.add_command(label="Spara ", accelerator="Command-s", command=spara_palindrom_pa_fil)
+    under_meny_arkiv.add_separator()
+    under_meny_arkiv.add_command(label="Avsluta", command=avsluta_program, accelerator="Command-w")
+
+    under_meny_go = Menu(menubar)
+    menubar.add_cascade(label="#!", menu=under_meny_go)
+    under_meny_go.add_command(label="Testa", accelerator="Command-R", command=testaPalindrom)
+
+    under_meny_info = Menu(menubar)
+    menubar.add_cascade(label="Hjälp", menu=under_meny_info)
+    under_meny_info.add_command(label="Vad är en Palindrom?", command=vad_ar_en_palindrom, accelerator="Command-e")
+    under_meny_info.add_command(label="Hur fungerar PalApp?", command=hur_fungerar_palindromdetektorn, accelerator="Command-j")
+
+#Tar in inmatningen från användaren
+def palindrom_inmatning():
+        ordnad_text = str(mata_in_palindrom.get().encode("utf-8"))
+        ord_att_ta_bort = {"!", "'", ".", ",", ":", "\"", "&", "(", ")", "?",";","#","-", "_", " "}
+        for i in ord_att_ta_bort:
+            ordnad_text = ordnad_text.replace(i, "").lower()
+        return ordnad_text.decode("utf-8")
+
+#tar in inmatning kollar om det är en palindrom tar beslut därefter
+def testaPalindrom():
+    inmatning = palindrom_inmatning()
+
+    for i in range (0, len(inmatning)-1):
+        if inmatning[i] != inmatning[len(inmatning)-1-i]:
+            palindrom_label.configure(bg="#FF1744", fg="#FFEBEE", text = "Nej, det är inte en palindrom!")
+            palindrom = False
+        else:
+            palindrom_label.configure(bg="#00E676", fg="#E8F5E9", text = "Ja, det är en palindrom!")
+            palindrom = True
+    return palindrom
+
+#Sparar på fil
+def spara_palindrom_pa_fil():
+    ar_palindrom = testaPalindrom()
+    try:
+        if ar_palindrom:
+            myFile = open("palapppalindromer.txt", "a")
+            myFile.write(palindrom_inmatning() + "\n")
+            myFile.close()
+        else:
+            palindrom_label.config(text="Det går enbart att spara palindromer \n Försök igen! \n Skriv in en palindrom och spara den")
+    except IOError:
+        print "Oj ett fel verkar ha uppstått, kunde inte skriva till fil."
+
+def vad_ar_en_palindrom():
+    palindrom_label.config(text="(följd av) ord som får samma lydelse oberoende av om man läser fram- \neller baklänges: \"ni talar bra latin\" \nProva!")
+    palindrom_label.config(bg="#B2DFDB", fg="#004D40")
+
+def hur_fungerar_palindromdetektorn():
+    palindrom_label.config(text="PalApp är en som tar emot en text från användaren och \n kontrollerar om inmatningen är en palindrom \nSpara godkända palindromer sedan till en fil \n Prova!")
+    palindrom_label.config(bg="#B2DFDB", fg="#004D40")
+
+#Ger palindrom eller inte sitt ursprungliga utseende
+def tillbaka_till_start():
+    palindrom_label.config(text="[PalApp] - mata in något, se om det är en palindrom", bg="#B2DFDB", fg="#004D40")
+
+#Stänger fönstret avslutar programmet
+def avsluta_program():
+    if tkMessageBox.askyesno("Programmet avslutas", "Är du säker på att du vill avsluta ",icon="warning"):
+        root.destroy()
+
+#Kör programmet och gör det robust
+if __name__ == '__main__':
+    main()
